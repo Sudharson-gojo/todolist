@@ -3,6 +3,7 @@ import './AddTaskForm.css';
 
 const AddTaskForm = ({ onAddTask, defaultCategory = 'daily' }) => {
   const [newTask, setNewTask] = useState('');
+  const [category, setCategory] = useState(defaultCategory);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -11,8 +12,9 @@ const AddTaskForm = ({ onAddTask, defaultCategory = 'daily' }) => {
 
     setIsSubmitting(true);
     try {
-      await onAddTask(newTask.trim(), defaultCategory);
+      await onAddTask(newTask.trim(), category);
       setNewTask('');
+      setCategory(defaultCategory);
     } catch (error) {
       console.error('Error adding task:', error);
     } finally {
@@ -28,7 +30,7 @@ const AddTaskForm = ({ onAddTask, defaultCategory = 'daily' }) => {
         <div className="form-row">
           {/* Task Input */}
           <div className="form-group">
-            <label htmlFor="task-input" className="form-label">
+            <label htmlFor="task-input" className="form-label yellow-label">
               Task Description
             </label>
             <input
@@ -37,10 +39,27 @@ const AddTaskForm = ({ onAddTask, defaultCategory = 'daily' }) => {
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
               placeholder="What needs to be done?"
-              className="form-input"
+              className="form-input dark-input"
               maxLength={200}
               disabled={isSubmitting}
             />
+          </div>
+          {/* Category Select */}
+          <div className="form-group">
+            <label htmlFor="category-select" className="form-label yellow-label">
+              Category
+            </label>
+            <select
+              id="category-select"
+              className="form-select light-select"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              disabled={isSubmitting}
+            >
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
           </div>
         </div>
 
@@ -49,7 +68,7 @@ const AddTaskForm = ({ onAddTask, defaultCategory = 'daily' }) => {
           <button
             type="submit"
             disabled={!newTask.trim() || isSubmitting}
-            className={`submit-btn ${isSubmitting ? 'loading' : ''}`}
+            className={`submit-btn light-btn ${isSubmitting ? 'loading' : ''}`}
           >
             <span className="submit-icon">➕</span>
             {isSubmitting ? 'Adding...' : 'Add Task'}

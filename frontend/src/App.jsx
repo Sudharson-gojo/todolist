@@ -4,9 +4,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Home from './pages/Home';
-import DailyTasks from './pages/DailyTasks';
-import WeeklyTasks from './pages/WeeklyTasks';
-import MonthlyTasks from './pages/MonthlyTasks';
 
 import './App.css';
 
@@ -137,30 +134,6 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <Home />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/daily" 
-            element={
-              <ProtectedRoute>
-                <DailyTasks />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/weekly" 
-            element={
-              <ProtectedRoute>
-                <WeeklyTasks />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/monthly" 
-            element={
-              <ProtectedRoute>
-                <MonthlyTasks />
               </ProtectedRoute>
             } 
           />

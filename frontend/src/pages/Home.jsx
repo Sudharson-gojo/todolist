@@ -1,15 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Navbar from '../components/Navbar';
+// Navbar removed per template; lightweight profile shown instead
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatsCard from '../components/StatsCard';
 import TaskCard from '../components/TaskCard';
 import AddTaskForm from '../components/AddTaskForm';
+import Calendar from '../components/Calendar';
+import Clock from '../components/Clock';
+import '../components/CalendarClock.css';
 
 const Home = () => {
   const { user, token, logout } = useAuth();
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
   const [tasks, setTasks] = useState({
     daily: [],
     weekly: [],
@@ -158,73 +164,101 @@ const Home = () => {
     return Math.round((getCompletedTasks() / total) * 100);
   };
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [menuOpen]);
+
+  const handleLogout = () => {
+    setMenuOpen(false);
+    logout();
+    navigate('/login', { replace: true });
+  };
+
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      
-      <div className="container py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="welcome-title mb-2">
-            Welcome back, {user?.name || 'Achiever'}! 👋
-          </h1>
-          <p className="welcome-subtitle">Here's your roadmap to an amazing day</p>
-        </div>
-
-        {/* Motivational Quote */}
-        <div className="quote-card card mb-8">
-          <div className="quote-accent" />
-          <p className="quote-text">“Small progress is still progress. Keep going — future you is proud.”</p>
-          <p className="quote-author">Your Productivity Coach</p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid gap-6 mb-8 md-grid-cols-2 lg-grid-cols-4">
-          <StatsCard
-            title="Total Tasks"
-            count={getTotalTasks()}
-            icon="📋"
-            color="blue"
-            description="All categories"
-          />
-          <StatsCard
-            title="Pending Tasks"
-            count={getPendingTasks()}
-            icon="⏳"
-            color="orange"
-            description="Need attention"
-            progress={getTotalTasks() > 0 ? Math.round((getPendingTasks() / getTotalTasks()) * 100) : 0}
-          />
-          <StatsCard
-            title="Completed Tasks"
-            count={getCompletedTasks()}
-            icon="✅"
-            color="green"
-            description="Great job!"
-            progress={getCompletionPercent()}
-          />
-          <StatsCard
-            title="Completion Rate"
-            count={getTotalTasks() > 0 ? `${Math.round((getCompletedTasks() / getTotalTasks()) * 100)}%` : '0%'}
-            icon="📊"
-            color="purple"
-            description="Your progress"
-            progress={getCompletionPercent()}
-          />
-        </div>
-
-        {/* Category Navigation Cards removed as requested */}
-
-        {/* Quick Add Task removed as requested */}
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-500 bg-opacity-20 border border-red-400 rounded-md">
-            <p className="text-red-200 text-sm">{error}</p>
+    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#2d3748', minHeight: '100vh' }}>
+      <div className="container" style={{ maxWidth: 1240, margin: '0 auto', padding: '24px' }}>
+        {/* Header with profile (top-left) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <div ref={menuRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.7)', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#2d3748', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }}
+            >
+              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+            </button>
+            {menuOpen && (
+              <div role="menu" style={{ position: 'absolute', top: 44, right: 0, minWidth: 180, background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: 12, boxShadow: '0 12px 30px rgba(0,0,0,0.15)', overflow: 'hidden', zIndex: 50, backdropFilter: 'blur(10px)' }}>
+                <div style={{ padding: '8px 12px', fontSize: 12, opacity: 0.8, color: '#4a5568' }}>Signed in as</div>
+                <div style={{ padding: '0 12px 8px 12px', fontWeight: 600, color: '#1a202c' }}>{user?.name || 'User'}</div>
+                <div style={{ height: 1, background: 'var(--glass-border)' }} />
+                <button onClick={handleLogout} role="menuitem" style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '10px 12px', color: '#2d3748', cursor: 'pointer' }}
+                  onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,215,0,0.08)')}
+                  onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
-        )}
+          <div style={{ fontWeight: 600 }}>{user?.name || 'User'}</div>
+        </div>
 
-        {/* Recent Tasks removed as requested */}
+        {/* Dashboard grid to mimic template */}
+        <div className="dashboard-grid" style={{ gridTemplateColumns: '1.4fr 1fr' }}>
+          {/* Left column: top Calendar, bottom big Clock */}
+          <div style={{ display: 'grid', gap: 24 }}>
+            <Calendar />
+            <Clock />
+          </div>
+
+          {/* Right column: input and todo list panel */}
+          <div className="right-stack">
+            <div className="glass card glass-card">
+              <div className="card-header">Write here anythings</div>
+              <AddTaskForm onAddTask={addTask} />
+            </div>
+
+            {/* Single Todo List panel with 3 sections */}
+            <div className="glass card glass-card">
+              <div className="card-header">Todo List</div>
+              {error && (
+                <div className="mb-6 p-4" style={{ background: 'rgba(255, 0, 0, 0.15)', border: '1px solid rgba(255,0,0,0.3)', borderRadius: 8 }}>
+                  <p className="text-red-200 text-sm">{error}</p>
+                </div>
+              )}
+              {loading ? (
+                <LoadingSpinner message="Loading your tasks..." />
+              ) : (
+                <div style={{ display: 'grid', gap: 16 }}>
+                  {['daily','weekly','monthly'].map((cat) => {
+                    const pending = tasks[cat].filter(t => !t.completed);
+                    const completed = tasks[cat].filter(t => t.completed);
+                    const titles = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
+                    return (
+                      <div key={cat}>
+                        <div style={{ fontWeight: 600, marginBottom: 8 }}>{titles[cat]}</div>
+                        <div className="grid" style={{ gap: 12 }}>
+                          {[...pending, ...completed].map(task => (
+                            <TaskCard key={task.id} task={task} category={cat} onToggle={toggleTask} onDelete={deleteTask} />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
