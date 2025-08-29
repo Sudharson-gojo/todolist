@@ -9,6 +9,7 @@ import TaskCard from '../components/TaskCard';
 import AddTaskForm from '../components/AddTaskForm';
 import Calendar from '../components/Calendar';
 import Clock from '../components/Clock';
+import Dashboard from '../components/Dashboard';
 import '../components/CalendarClock.css';
 
 const Home = () => {
@@ -23,6 +24,7 @@ const Home = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showDashboard, setShowDashboard] = useState(false);
 
   // Fetch tasks on component mount
   useEffect(() => {
@@ -210,6 +212,32 @@ const Home = () => {
             )}
           </div>
           <div style={{ fontWeight: 600 }}>{user?.name || 'User'}</div>
+          <button
+            onClick={() => setShowDashboard(true)}
+            style={{
+              background: 'rgba(255,255,255,0.15)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: 12,
+              padding: '8px 16px',
+              color: '#ffffff',
+              fontWeight: 600,
+              fontSize: 14,
+              cursor: 'pointer',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.25)';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            Dashboard
+          </button>
         </div>
 
         {/* Dashboard grid to mimic template */}
@@ -259,6 +287,14 @@ const Home = () => {
             </div>
           </div>
         </div>
+
+        {/* Dashboard Modal */}
+        {showDashboard && (
+          <Dashboard 
+            tasks={tasks} 
+            onClose={() => setShowDashboard(false)} 
+          />
+        )}
       </div>
     </div>
   );
