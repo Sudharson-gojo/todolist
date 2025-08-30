@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { GamificationProvider } from './context/GamificationContext';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Home from './pages/Home';
@@ -147,13 +148,15 @@ const AppContent = () => {
   );
 };
 
-// App Component with AuthProvider
+// App Component with AuthProvider and GamificationProvider
 const App = () => {
   console.log('App component is rendering!');
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <AppContent />
+        <GamificationProvider>
+          <AppContent />
+        </GamificationProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

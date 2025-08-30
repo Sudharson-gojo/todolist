@@ -1,0 +1,184 @@
+/* Level Progress Bar Styles */
+.level-progress-container {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 16px;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--glass-shadow);
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
+}
+
+.level-progress-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(31, 38, 135, 0.25);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.level-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.level-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.level-number {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.level-details {
+  flex: 1;
+}
+
+.level-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.points-display {
+  font-size: 12px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.xp-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.xp-bar-container {
+  position: relative;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.xp-bar-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+  border-radius: 4px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  box-shadow: 0 0 8px rgba(67, 233, 123, 0.4);
+}
+
+.xp-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+.xp-bar-glow {
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+  border-radius: 6px;
+  opacity: 0;
+  filter: blur(4px);
+  z-index: -1;
+  transition: opacity 0.3s ease;
+}
+
+.xp-bar-container:hover .xp-bar-glow {
+  opacity: 0.6;
+}
+
+.xp-text {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+/* Level Up Animation */
+.level-up-animation {
+  animation: levelUpPulse 1s ease-out;
+}
+
+@keyframes levelUpPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: var(--glass-shadow);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: var(--glass-shadow);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .level-progress-container {
+    padding: 12px;
+  }
+  
+  .level-info {
+    gap: 8px;
+  }
+  
+  .level-badge {
+    padding: 6px 10px;
+  }
+  
+  .level-number {
+    font-size: 12px;
+  }
+  
+  .level-title {
+    font-size: 14px;
+  }
+  
+  .points-display {
+    font-size: 11px;
+  }
+}

@@ -86,6 +86,7 @@
 .cal-cell {
   height: 32px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
@@ -93,6 +94,8 @@
   transition: all 0.2s ease;
   font-size: 12px;
   font-weight: 500;
+  position: relative;
+  padding: 2px;
 }
 .cal-cell:hover {
   background: rgba(255, 255, 255, 0.1);
@@ -105,6 +108,57 @@
   color: var(--text-primary); 
   font-weight: 700;
   border-radius: 50%;
+}
+
+.cal-cell.streak-day {
+  background: linear-gradient(135deg, rgba(67, 233, 123, 0.3), rgba(56, 249, 215, 0.3));
+  border: 1px solid rgba(67, 233, 123, 0.5);
+  box-shadow: 0 0 8px rgba(67, 233, 123, 0.3);
+}
+
+.cal-date-number {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.task-indicators {
+  display: flex;
+  gap: 1px;
+  margin-top: 1px;
+}
+
+.task-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.task-dot.daily.completed {
+  background: #43e97b; /* Green for daily completed */
+}
+
+.task-dot.daily.pending {
+  background: rgba(67, 233, 123, 0.4);
+  border: 1px solid #43e97b;
+}
+
+.task-dot.weekly.completed {
+  background: #ff6b6b; /* Red for weekly completed */
+}
+
+.task-dot.weekly.pending {
+  background: rgba(255, 107, 107, 0.4);
+  border: 1px solid #ff6b6b;
+}
+
+.task-dot.monthly.completed {
+  background: #ffa726; /* Orange for monthly completed */
+}
+
+.task-dot.monthly.pending {
+  background: rgba(255, 167, 38, 0.4);
+  border: 1px solid #ffa726;
 }
 
 /* Clock */

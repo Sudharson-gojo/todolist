@@ -1,7 +1,9 @@
 import React, { useMemo } from 'react';
 import './Dashboard.css';
+import LevelProgressBar from './LevelProgressBar';
+import BadgeDisplay from './BadgeDisplay';
 
-const Dashboard = ({ tasks, onClose }) => {
+const Dashboard = ({ tasks, gamificationData, onClose }) => {
   // Calculate progress for different time periods
   const progressData = useMemo(() => {
     const now = new Date();
@@ -90,6 +92,49 @@ const Dashboard = ({ tasks, onClose }) => {
         </div>
         
         <div className="dashboard-content">
+          {/* Gamification Section */}
+          {gamificationData && (
+            <div className="gamification-section">
+              <div className="gamification-grid">
+                <LevelProgressBar 
+                  level={gamificationData.level}
+                  levelTitle={gamificationData.levelTitle}
+                  xpProgress={gamificationData.xpProgress}
+                  xpForNextLevel={gamificationData.xpForNextLevel}
+                  points={gamificationData.points}
+                />
+                <BadgeDisplay 
+                  badges={gamificationData.badges}
+                />
+              </div>
+              
+              {/* Stats Cards */}
+              <div className="stats-grid">
+                <div className="stat-card glass">
+                  <div className="stat-icon">🔥</div>
+                  <div className="stat-value">{gamificationData.streaks?.current || 0}</div>
+                  <div className="stat-label">Current Streak</div>
+                </div>
+                <div className="stat-card glass">
+                  <div className="stat-icon">🏆</div>
+                  <div className="stat-value">{gamificationData.badges?.length || 0}</div>
+                  <div className="stat-label">Badges Earned</div>
+                </div>
+                <div className="stat-card glass">
+                  <div className="stat-icon">⭐</div>
+                  <div className="stat-value">{gamificationData.achievements?.totalTasksCompleted || 0}</div>
+                  <div className="stat-label">Tasks Completed</div>
+                </div>
+                <div className="stat-card glass">
+                  <div className="stat-icon">📈</div>
+                  <div className="stat-value">{gamificationData.streaks?.longest || 0}</div>
+                  <div className="stat-label">Longest Streak</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Progress Section */}
           <div className="progress-grid">
             <ProgressCard 
               title="Daily Progress" 

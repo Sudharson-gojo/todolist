@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useGamification } from '../context/GamificationContext';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 // Navbar removed per template; lightweight profile shown instead
@@ -10,10 +11,14 @@ import AddTaskForm from '../components/AddTaskForm';
 import Calendar from '../components/Calendar';
 import Clock from '../components/Clock';
 import Dashboard from '../components/Dashboard';
+import LevelProgressBar from '../components/LevelProgressBar';
+import BadgeDisplay from '../components/BadgeDisplay';
+import CompletionAnimation from '../components/CompletionAnimation';
 import '../components/CalendarClock.css';
 
 const Home = () => {
   const { user, token, logout } = useAuth();
+  const gamification = useGamification();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -76,17 +81,19 @@ const Home = () => {
       );
       
       // Add the new task to the appropriate category
-      const newTaskData = response.data.data.task;
-      setTasks(prevTasks => ({
-        ...prevTasks,
-        [category]: [newTaskData, ...prevTasks[category]]
-      }));
+      const newTaskData = response.data.data?.task;
+      if (newTaskData) {
+        setTasks(prevTasks => ({
+          ...prevTasks,
+          [category]: [newTaskData, ...(prevTasks[category] || [])]
+        }));
+      }
       
       setError(null);
     } catch (error) {
       console.error('Error adding task:', error);
       if (error.response?.status === 401) {
-        // Handle logout in navbar
+        logout();
       } else {
         setError('Failed to add task');
         throw error;
@@ -94,25 +101,31 @@ const Home = () => {
     }
   };
 
-  // Toggle task completion
+  // Toggle task completion with gamification
   const toggleTask = async (taskId, category) => {
     try {
-      const response = await axios.put(`/api/tasks/${taskId}`, {}, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const gamificationResult = await gamification.processTaskCompletion(taskId, category);
       
       // Update the task in the appropriate category
       setTasks(prevTasks => ({
         ...prevTasks,
-        [category]: prevTasks[category].map(task => 
-          task.id === taskId ? response.data.data.task : task
-        )
+        [category]: (prevTasks[category] || []).map(task => {
+          if (task && task.id === taskId) {
+            // If gamificationResult has task data, use it, otherwise toggle the completed status
+            if (gamificationResult && gamificationResult.task) {
+              return gamificationResult.task;
+            } else {
+              return { ...task, completed: !task.completed };
+            }
+          }
+          return task;
+        }).filter(Boolean) // Remove any null/undefined tasks
       }));
       setError(null);
     } catch (error) {
       console.error('Error updating task:', error);
       if (error.response?.status === 401) {
-        // Handle logout in navbar
+        logout();
       } else {
         setError('Failed to update task');
       }
@@ -186,7 +199,7 @@ const Home = () => {
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#2d3748', minHeight: '100vh' }}>
       <div className="container" style={{ maxWidth: 1240, margin: '0 auto', padding: '24px' }}>
-        {/* Header with profile (top-left) */}
+        {/* Header with profile and level info */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
           <div ref={menuRef} style={{ position: 'relative' }}>
             <button
@@ -211,7 +224,12 @@ const Home = () => {
               </div>
             )}
           </div>
-          <div style={{ fontWeight: 600 }}>{user?.name || 'User'}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div style={{ fontWeight: 600 }}>{user?.name || 'User'}</div>
+            <div style={{ fontSize: 12, opacity: 0.8 }}>
+              Level {gamification.level}: {gamification.levelTitle}
+            </div>
+          </div>
           <button
             onClick={() => setShowDashboard(true)}
             style={{
@@ -244,12 +262,29 @@ const Home = () => {
         <div className="dashboard-grid" style={{ gridTemplateColumns: '1.4fr 1fr' }}>
           {/* Left column: top Calendar, bottom big Clock */}
           <div style={{ display: 'grid', gap: 24 }}>
-            <Calendar />
+            <Calendar tasks={tasks} streaks={gamification.streaks} />
             <Clock />
           </div>
 
-          {/* Right column: input and todo list panel */}
+          {/* Right column: gamification, input and todo list panel */}
           <div className="right-stack">
+            {/* Level Progress Bar */}
+            <LevelProgressBar 
+              level={gamification.level}
+              levelTitle={gamification.levelTitle}
+              xpProgress={gamification.xpProgress}
+              xpForNextLevel={gamification.xpForNextLevel}
+              points={gamification.points}
+              showAnimation={gamification.animations.showLevelUp}
+            />
+
+            {/* Badge Display */}
+            <BadgeDisplay 
+              badges={gamification.badges}
+              newBadges={gamification.animations.newBadges}
+              showAnimation={gamification.animations.showBadgeUnlock}
+            />
+
             <div className="glass card glass-card">
               <div className="card-header">Write here anythings</div>
               <AddTaskForm onAddTask={addTask} />
@@ -268,16 +303,19 @@ const Home = () => {
               ) : (
                 <div style={{ display: 'grid', gap: 16 }}>
                   {['daily','weekly','monthly'].map((cat) => {
-                    const pending = tasks[cat].filter(t => !t.completed);
-                    const completed = tasks[cat].filter(t => t.completed);
+                    const categoryTasks = tasks[cat] || [];
+                    const pending = categoryTasks.filter(t => t && !t.completed);
+                    const completed = categoryTasks.filter(t => t && t.completed);
                     const titles = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
                     return (
                       <div key={cat}>
                         <div style={{ fontWeight: 600, marginBottom: 8 }}>{titles[cat]}</div>
                         <div className="grid" style={{ gap: 12 }}>
-                          {[...pending, ...completed].map(task => (
-                            <TaskCard key={task.id} task={task} category={cat} onToggle={toggleTask} onDelete={deleteTask} />
-                          ))}
+                          {[...pending, ...completed].map(task => 
+                            task && task.id ? (
+                              <TaskCard key={task.id} task={task} category={cat} onToggle={toggleTask} onDelete={deleteTask} />
+                            ) : null
+                          )}
                         </div>
                       </div>
                     );
@@ -292,9 +330,32 @@ const Home = () => {
         {showDashboard && (
           <Dashboard 
             tasks={tasks} 
+            gamificationData={gamification}
             onClose={() => setShowDashboard(false)} 
           />
         )}
+
+        {/* Completion Animations */}
+        <CompletionAnimation
+          show={gamification.animations.showTaskComplete}
+          type="task"
+          message={gamification.animations.animationMessage}
+          onComplete={gamification.clearAnimations}
+        />
+        
+        <CompletionAnimation
+          show={gamification.animations.showBadgeUnlock}
+          type="badge"
+          message={gamification.animations.animationMessage}
+          onComplete={gamification.clearAnimations}
+        />
+        
+        <CompletionAnimation
+          show={gamification.animations.showLevelUp}
+          type="levelup"
+          message={gamification.animations.animationMessage}
+          onComplete={gamification.clearAnimations}
+        />
       </div>
     </div>
   );
